@@ -1,0 +1,233 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <style type="text/css">
+        #txt
+        {
+            width: 490px;
+            height: 32px;
+            background-color: White;
+            font: 16px arial;
+            border: 1px solid #cdcdcd;
+            border-color: #9a9a9a #cdcdcd #cdcdcd #9a9a9a;
+            vertical-align: top;
+            outline: none;
+        }
+        #btn
+        {
+            border: 0;
+            background-position: 0 -35px;
+            background-color: #ddd;
+            cursor: pointer;
+            width: 95px;
+            height: 32px;
+            padding: 0;
+            font-size: 16px;
+            text-align: center;
+            background-image: url(btn.png);
+        }
+        #dv
+        {
+            width: 595px;
+            margin: 0px auto;
+        }
+        #wds ul
+        {
+            text-align: left;
+            list-style-type: none;
+            margin: 0px;
+            padding: 0px;
+        }
+        #wds ul li
+        {
+            padding: 5px 0px 5px 0px;
+            cursor: pointer;
+        }
+        #wds
+        {
+            border: solid 1px gray;
+            width: 490px;
+            background-color: White;
+            font: 16px arial;
+            border: 1px solid #cdcdcd;
+            border-color: #9a9a9a #cdcdcd #cdcdcd #9a9a9a;
+            vertical-align: top;
+            outline: none;
+        }
+        body
+        {
+            background-color: White;
+        }
+        .logo
+        {
+            text-align: center;
+            width: 600px;
+            margin-top: 150px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 0px;
+        }
+    </style>
+    <script src="ajax.js" type="text/javascript"></script>
+    <script src="jquery-1.8.3.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        window.onload = function () {
+
+            var count;
+            hd('txt').onkeydown = function () {
+                count = this.value.length;
+            }
+
+            hd('txt').onkeyup = function (e) {
+                if (e.keyCode == 38 || e.keyCode == 40 || e.keyCode == 13 || e.keyCode == 27) {
+                    return;
+                }
+
+                if (hd('wds')) {
+                    hd('dv').removeChild(hd('wds'));
+                }
+
+                if (this.value.length == 0) {
+                    return;
+                }
+
+                if (this.value.length == count) {
+                    return;
+                }
+
+                ajax('get', 'baidu.ashx?wd=' + encodeURIComponent(this.value), function (s) {
+
+                    var arr = eval(s);
+
+                    if (arr.length == 0) {
+                        return;
+                    }
+                    var wdsObj = document.createElement('div');
+                    wdsObj.id = 'wds';
+                    hd('dv').appendChild(wdsObj);
+
+                    var ulObj = document.createElement('ul');
+                    wdsObj.appendChild(ulObj);
+
+                    var length;
+                    if (arr.length > 10) {
+                        length = 10;
+                    }
+                    else {
+                        length = arr.length;
+                    }
+                    for (var i = 0; i < length; i++) {
+                        var liObj = document.createElement('li');
+                        liObj.innerHTML = arr[i];
+                        liObj.setAttribute('sel', 'false');
+                        ulObj.appendChild(liObj);
+                    }
+                    hd('dv').onkeydown
+                    var lis = hd('wds').getElementsByTagName('li');
+                    for (var i = 0; i < lis.length; i++) {
+                        var item = lis[i];
+                        item.onmouseover = function () {
+                            selectLi(this);
+                        };
+                        item.onmouseout = function () {
+                            $(this).css('backgroundColor', 'white').attr('sel', 'false');
+                        };
+                        item.onclick = function () {
+                            hd('txt').value = this.innerHTML;
+                            hd('dv').removeChild(hd('wds'));
+                        };
+                    }
+                });
+            };
+
+            document.onclick = function () {
+                if (hd('wds')) {
+                    hd('dv').removeChild(hd('wds'));
+                }
+            }
+
+            hd('dv').onclick = function () {
+                window.event.cancelBubble = true;
+            }
+
+            hd('txt').onkeydown = function (e) {
+                switch (e.keyCode) {
+                    //向下按键 
+                    case 40:
+                        upDown('down');
+                        break;
+                    //向上按键  
+                    case 38:
+                        upDown('up');
+                        break;
+                    //回车 
+                    case 13:
+                        search();
+                        break;
+                    //esc 
+                    case 27:
+                        if (hd('wds')) {
+                            hd('dv').removeChild(hd('wds'));
+                        }
+                        break;
+                }
+            }
+        };
+
+        function upDown(type) {
+            if (hd('wds')) {
+                var selObj = $('#wds li[sel=true]');
+                if (selObj.length != 0) {
+                    var udObj;
+                    if (type == 'up') {
+                        udObj = selObj.prev();
+                    }
+                    else {
+                        udObj = selObj.next();
+                    }
+                    if (udObj.length != 0) {
+                        selectLi(udObj);
+                    }
+                    else {
+                        $('#wds li').css('backgroundColor', 'white').attr('sel', 'false');
+                    }
+                }
+                else {
+                    if (type == 'up') {
+                        selectLi($('#wds li:last'));
+                    }
+                    else {
+                        selectLi($('#wds li:first'));
+                    }
+
+                }
+            }
+        }
+
+        function selectLi(obj) {
+            $(obj).css('backgroundColor', '#EBEBEB').attr('sel', 'true').siblings().css('backgroundColor', 'white').attr('sel', 'false');
+            hd('txt').value = $(obj).text();
+        }
+
+        function search() {
+            if (txt.value.length == 0) {
+                location.href = 'javascript:void(0)';
+            }
+            else {
+                location.href = 'http://www.baidu.com/s?wd=' + txt.value;
+            }
+        }
+
+    </script>
+</head>
+<body>
+    <div class="logo">
+        <img src="bdlogo.gif" alt='logo' />
+    </div>
+    <div id="dv">
+        <input type="text" id="txt" />
+        <input type="button" value="百度一下" id="btn" onclick="search()" />
+    </div>
+</body>
+</html>
